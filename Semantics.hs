@@ -1,6 +1,7 @@
 module Semantics where
 
-import qualified Data.Map  as M
+import qualified Data.Map as M
+import qualified Data.Set as S
 
 import Syntax
 
@@ -28,3 +29,31 @@ replace selfTerm (selfName, body) = case body of --{ _ -> error "nyi" }
     where
         repl :: Term -> Term
         repl bdoy' = replace selfTerm (selfName, body')
+
+-- Generate a name that is not free in a given term
+freshFor :: Term -> Name
+freshFor = findFresh . freeVars
+
+-- Enumerate the free variable names in a term
+freeVars :: Term -> S.Set Name
+freeVars tm = case tm of
+    Lit mets            -> S.unions (map freeVarsFn (M.elems mets))
+    Var name            -> S.singleton name
+    Call obj name       -> freeVars obj
+    Assign obj name fn  -> S.union (freeVars obj) (freeVarsFn fn)
+    where
+        freeVarsFn :: Function -> S.Set Name
+        freeVarsFn (self, body) = S.delete self (freeVars body)
+
+-- Generate a name that does not belong to a particular set of names (i.e. a set
+-- of free names from a term)
+findFresh :: S.Set Name -> Name
+findFresh names = findFresh' names (S.findMin names)
+    where
+    -- Test if a name is in the set. If it isn't return it, otherwise add an
+    -- apostrophe to it and try again
+    findFresh' :: S.Set Name -> Name -> Name
+    findFresh' names (Name lastTry)
+        | otherwise                     = Name lastTry
+        | S.member (Name lastTry) names =
+            findFresh' names (Name (lastTry ++ "'"))
