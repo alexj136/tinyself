@@ -1,0 +1,17 @@
+name:                tinyself
+version:             0.1.0.0
+homepage:            https://github.com/alexj136/tinyself
+author:              Alex Jeffery
+maintainer:          A.P.Jeffery@sussex.ac.uk
+category:            Language
+build-type:          Simple
+cabal-version:       >=1.10
+
+executable tinyself
+  main-is:             Main.hs
+  other-modules:       Lexer, Parser
+  build-depends:       base >=4.8 && <4.9, containers >=0.5 && <0.6
+  hs-source-dirs:      src
+  build-tools:         alex, happy
+  default-language:    Haskell2010
+  ghc-options:         -fno-warn-tabs
