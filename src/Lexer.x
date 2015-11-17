@@ -22,7 +22,7 @@ tokens :-
     ")"                    { \p s -> ( TK_RParen       , pos p ) }
     "$"                    { \p s -> ( TK_Dollar       , pos p ) }
     "."                    { \p s -> ( TK_Dot          , pos p ) }
-    $alpha [$alnum \_]*    { \p s -> ( TK_Name s       , pos p ) }
+    $alpha [$alnum \_]*    { \p s -> ( TK_Name (read s), pos p ) }
 
 {
 type Token = (TokenKind, TokenPos)
