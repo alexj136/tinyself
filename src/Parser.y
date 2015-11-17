@@ -12,16 +12,16 @@ import qualified Data.Map as M
 %error     { parseError }
 
 %token
-    lsquare { ( TK_LSquare , _ ) }
-    rsquare { ( TK_RSquare , _ ) }
-    comma   { ( TK_Comma   , _ ) }
-    larrow  { ( TK_LArrow  , _ ) }
-    colon   { ( TK_Colon   , _ ) }
-    lparen  { ( TK_LParen  , _ ) }
-    rparen  { ( TK_RParen  , _ ) }
-    dollar  { ( TK_Dollar  , _ ) }
-    dot     { ( TK_Dot     , _ ) }
-    name    { ( TK_Name $$ , _ ) }
+    lsquare { Token TK_LSquare   _ }
+    rsquare { Token TK_RSquare   _ }
+    comma   { Token TK_Comma     _ }
+    larrow  { Token TK_LArrow    _ }
+    colon   { Token TK_Colon     _ }
+    lparen  { Token TK_LParen    _ }
+    rparen  { Token TK_RParen    _ }
+    dollar  { Token TK_Dollar    _ }
+    dot     { Token TK_Dot       _ }
+    name    { Token (TK_Name $$) _ }
 %%
 
 OBJ :: { Term }
@@ -43,6 +43,6 @@ LITCONT
 {
 parseError :: [Token] -> a
 parseError []                = error "Reached end of file while parsing"
-parseError ((tk,(y,x)) : ts) = error $ concat ["Parse error on line ", show y,
-                               ", column ", show x,"."]
+parseError (Token _ (AlexPn _ y x) : ts) =
+    error $ concat ["Parse error on line ", show y, ", column ", show x,"."]
 }
