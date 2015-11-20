@@ -16,16 +16,17 @@ $alnum = [$alpha $digit]
 tokens :-
     $white+                ;
     \#.*\n                 ; -- Single line comments with '#'
-    "["                    { \p s -> Right ( TK_LSquare , p ) }
-    "]"                    { \p s -> Right ( TK_RSquare , p ) }
-    ","                    { \p s -> Right ( TK_Comma   , p ) }
-    "<-"                   { \p s -> Right ( TK_LArrow  , p ) }
-    ":"                    { \p s -> Right ( TK_Colon   , p ) }
-    "("                    { \p s -> Right ( TK_LParen  , p ) }
-    ")"                    { \p s -> Right ( TK_RParen  , p ) }
-    "$"                    { \p s -> Right ( TK_Dollar  , p ) }
-    "."                    { \p s -> Right ( TK_Dot     , p ) }
-    $alpha [$alnum \_]*    { \p s -> Left  ( s          , p ) }
+    "["                    { \p s -> Right ( TK_LSquare      , p ) }
+    "]"                    { \p s -> Right ( TK_RSquare      , p ) }
+    ","                    { \p s -> Right ( TK_Comma        , p ) }
+    "<-"                   { \p s -> Right ( TK_LArrow       , p ) }
+    ":"                    { \p s -> Right ( TK_Colon        , p ) }
+    "("                    { \p s -> Right ( TK_LParen       , p ) }
+    ")"                    { \p s -> Right ( TK_RParen       , p ) }
+    "$"                    { \p s -> Right ( TK_Dollar       , p ) }
+    "."                    { \p s -> Right ( TK_Dot          , p ) }
+    [0-9]+                 { \p s -> Right ( TK_Int (read s) , p ) }
+    $alpha [$alnum \_]*    { \p s -> Left  ( s               , p ) }
 
 {
 data TokenKind
@@ -38,6 +39,7 @@ data TokenKind
     | TK_RParen
     | TK_Dollar
     | TK_Dot
+    | TK_Int Int
     | TK_Name Name
     deriving (Show, Eq)
 

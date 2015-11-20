@@ -17,13 +17,15 @@ interpret term = case term of
     Assign tm l f -> do
         funcs <- interpret tm
         return $ M.insert l f funcs
+    IntObj _ _    -> error "interpret of IntObj not yet implemented"
 
 subTerm :: Term -> Name -> Term -> Term
 subTerm within from to = case within of
-    Lit    funcs  -> Lit $ M.map (\f -> subFunction f from to) funcs
-    Var    n      -> if n == from then to else within
-    Call   tm l   -> Call (subTerm tm from to) l
-    Assign tm l f -> Assign (subTerm tm from to) l (subFunction f from to)
+    Lit    funcs   -> Lit $ M.map (\f -> subFunction f from to) funcs
+    Var    n       -> if n == from then to else within
+    Call   tm l    -> Call (subTerm tm from to) l
+    Assign tm l f  -> Assign (subTerm tm from to) l (subFunction f from to)
+    IntObj i funcs -> IntObj i $ M.map (\f -> subFunction f from to) funcs
 
 subFunction :: Function -> Name -> Term -> Function
 subFunction (s, b) from to = (s', b')
@@ -39,10 +41,11 @@ subFunction (s, b) from to = (s', b')
 
 freesTerm :: Term -> S.Set Name
 freesTerm term = case term of
-    Lit    funcs  -> S.unions $ map freesFunction $ M.elems funcs
-    Var    n      -> S.singleton n
-    Call   tm l   -> freesTerm tm
-    Assign tm l f -> S.union (freesTerm tm) (freesFunction f)
+    Lit    funcs   -> S.unions $ map freesFunction $ M.elems funcs
+    Var    n       -> S.singleton n
+    Call   tm l    -> freesTerm tm
+    Assign tm l f  -> S.union (freesTerm tm) (freesFunction f)
+    IntObj i funcs -> freesTerm $ Lit funcs
 
 freesFunction :: Function -> S.Set Name
 freesFunction (s, b) = S.delete s (freesTerm b)

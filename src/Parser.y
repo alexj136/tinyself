@@ -22,6 +22,7 @@ import qualified Data.Map as M
     rparen  { ( TK_RParen    , _ ) }
     dollar  { ( TK_Dollar    , _ ) }
     dot     { ( TK_Dot       , _ ) }
+    int     { ( (TK_Int  $$) , _ ) }
     name    { ( (TK_Name $$) , _ ) }
 %%
 
@@ -32,6 +33,7 @@ OBJ
     | name                          { Var $1                  }
     | OBJ dot name                  { Call $1 $3              }
     | OBJ larrow name FN            { Assign $1 $3 $4         }
+    | int                           { IntObj $1 M.empty       }
 
 FN :: { Function }
 FN : dollar lparen name rparen OBJ { ($3, $5) }
