@@ -15,7 +15,7 @@ main = do
             let tokens = scan fileText
                 ast    = fmap parse tokens
             in putStrLn $ case fmap interpret ast of
-                { NameEnv _ _ (Just m) -> show $ Lit m
+                { NameEnv m n (Just t) -> toStringTerm (NameEnv m n (Lit t))
                 ; NameEnv _ _ Nothing  -> "Runtime error."
                 }
         }
