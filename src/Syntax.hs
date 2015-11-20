@@ -1,6 +1,6 @@
 module Syntax where
 
-import Util
+import Name
 import qualified Data.List as L
 import qualified Data.Map  as M
 

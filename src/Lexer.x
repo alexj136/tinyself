@@ -1,7 +1,7 @@
 {
 module Lexer where
 
-import Util
+import Name
 import qualified Data.Map as M
 }
 

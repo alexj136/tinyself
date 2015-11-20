@@ -1,6 +1,6 @@
 module Main where
 
-import Util
+import Name
 import Lexer
 import Parser
 import Syntax

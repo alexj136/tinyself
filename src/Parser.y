@@ -1,7 +1,7 @@
 {
 module Parser where
 
-import Util
+import Name
 import Lexer
 import Syntax
 import qualified Data.Map as M

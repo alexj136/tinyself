@@ -1,4 +1,4 @@
-module Util where
+module Name where
 
 import qualified Data.Map as M
 
