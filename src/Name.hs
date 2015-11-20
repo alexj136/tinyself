@@ -4,7 +4,7 @@ import qualified Data.Map as M
 
 newtype Name = Name Int deriving (Eq, Ord)
 instance Show Name where
-    show (Name n) = 'n' : show n
+    show (Name n) = show n
 
 next :: Name -> Name
 next (Name n) = Name (n + 1)
@@ -28,5 +28,7 @@ instance Applicative NameEnv where
 nameEnv :: (M.Map Name String, Name, a) -> NameEnv a
 nameEnv (nameMap, nextName, a) = NameEnv nameMap nextName a
 
-getValue :: NameEnv a -> a
-getValue (NameEnv _ _ a) = a
+query :: Name -> NameEnv a -> String
+query n (NameEnv nameMap _ _) = case M.lookup n nameMap of
+    Just s  -> s
+    Nothing -> "new^" ++ show n

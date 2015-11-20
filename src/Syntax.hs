@@ -25,16 +25,16 @@ instance Show Term where
             ":$(" ++ show s ++ ")" ++ show bdy
 
 toStringTerm :: NameEnv Term -> String
-toStringTerm (NameEnv nameMap nextName term) = case term of
+toStringTerm env@(NameEnv nameMap nextName term) = case term of
     Lit mets            -> "[ " ++ (concat (L.intersperse " , " (
-        map (\(l, (s, m)) -> nameMap M.! l ++
-            ":$(" ++ nameMap M.! s ++ ')' :
+        map (\(l, (s, m)) -> query l env ++
+            ":$(" ++ query s env ++ ')' :
                 (toStringTerm (NameEnv nameMap nextName m)))
             (M.toList mets)
         ))) ++ " ]"
-    Var name            -> nameMap M.! name
+    Var name            -> query name env
     Call obj name       -> (toStringTerm (NameEnv nameMap nextName obj)) ++
-        '.' : nameMap M.! name
+        '.' : query name env
     Assign obj name (s, bdy) -> (toStringTerm (NameEnv nameMap nextName obj)) ++
-        " <- " ++ nameMap M.! name ++ ":$(" ++ nameMap M.! s ++ ")" ++
+        " <- " ++ query name env ++ ":$(" ++ query s env ++ ")" ++
         (toStringTerm (NameEnv nameMap nextName bdy))
