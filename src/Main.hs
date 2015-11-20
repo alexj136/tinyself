@@ -1,9 +1,23 @@
 module Main where
 
-import qualified Lexer  as L
-import qualified Parser as P
+import Util
+import Lexer
+import Parser
 import Syntax
 import Interpreter
+import System.Environment (getArgs)
 
 main = do
-    putStrLn "nyi"
+    args <- getArgs
+    if length args == 1 then
+        do {
+            fileText <- readFile (args !! 0);
+            let tokens = scan fileText
+                ast    = fmap parse tokens
+            in putStrLn $ case fmap interpret ast of
+                { NameEnv _ _ (Just m) -> show $ Lit m
+                ; NameEnv _ _ Nothing  -> "Runtime error."
+                }
+        }
+    else
+        putStrLn "Bad command syntax."

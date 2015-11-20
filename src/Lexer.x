@@ -1,10 +1,11 @@
 {
 module Lexer where
 
+import Util
 import qualified Data.Map as M
 }
 
-%wrapper "monadUserState"
+%wrapper "posn"
 
 $digit = 0-9
 $lower = a-z
@@ -15,47 +16,18 @@ $alnum = [$alpha $digit]
 tokens :-
     $white+                ;
     \#.*\n                 ; -- Single line comments with '#'
-    "["                    { makeSimpleToken TK_LSquare }
-    "]"                    { makeSimpleToken TK_RSquare }
-    ","                    { makeSimpleToken TK_Comma   }
-    "<-"                   { makeSimpleToken TK_LArrow  }
-    ":"                    { makeSimpleToken TK_Colon   }
-    "("                    { makeSimpleToken TK_LParen  }
-    ")"                    { makeSimpleToken TK_RParen  }
-    "$"                    { makeSimpleToken TK_Dollar  }
-    "."                    { makeSimpleToken TK_Dot     }
-    $alpha [$alnum \_]*    { makeNameToken              }
+    "["                    { \p s -> Right ( TK_LSquare , p ) }
+    "]"                    { \p s -> Right ( TK_RSquare , p ) }
+    ","                    { \p s -> Right ( TK_Comma   , p ) }
+    "<-"                   { \p s -> Right ( TK_LArrow  , p ) }
+    ":"                    { \p s -> Right ( TK_Colon   , p ) }
+    "("                    { \p s -> Right ( TK_LParen  , p ) }
+    ")"                    { \p s -> Right ( TK_RParen  , p ) }
+    "$"                    { \p s -> Right ( TK_Dollar  , p ) }
+    "."                    { \p s -> Right ( TK_Dot     , p ) }
+    $alpha [$alnum \_]*    { \p s -> Left  ( s          , p ) }
 
 {
-
-data AlexUserState = AlexUserState (M.Map String Int) Int deriving Show
-
-alexInitUserState :: AlexUserState
-alexInitUserState = AlexUserState M.empty 0
-
-alexEOF :: Alex Token
-alexEOF = return $ Token TK_EOF $ error "position of EOF token"
-
-getIntName :: AlexUserState -> String -> (AlexUserState, Int)
-getIntName auState@(AlexUserState nameMap nextIntName) stringName =
-    case M.lookup stringName nameMap of
-        Just i  -> (auState, i)
-        Nothing -> (AlexUserState (M.insert stringName nextIntName nameMap)
-                (nextIntName + 1), nextIntName)
-
-makeSimpleToken :: TokenKind -> AlexInput -> Int -> Alex Token
-makeSimpleToken (TK_Name _) _            _ = error "makeSimpleToken of TK_Name"
-makeSimpleToken tk          (p, _, _, _) _ = return $ Token tk p
-
-makeNameToken :: AlexInput -> Int -> Alex Token
-makeNameToken (p, _, _, input) len = Alex $ \aState -> let
-    auState :: AlexUserState
-    intName :: Int
-    (auState, intName) = getIntName (alex_ust aState) (take len input)
-    in Right (aState{alex_ust=auState}, Token (TK_Name intName) p)
-
-data Token = Token TokenKind AlexPosn deriving Show
-
 data TokenKind
     = TK_LSquare
     | TK_RSquare
@@ -66,7 +38,24 @@ data TokenKind
     | TK_RParen
     | TK_Dollar
     | TK_Dot
-    | TK_Name Int
-    | TK_EOF
-    deriving (Show, Eq, Ord)
+    | TK_Name Name
+    deriving (Show, Eq)
+
+type Token = (TokenKind, AlexPosn)
+type AlmostToken = Either (String, AlexPosn) Token
+
+makeTokens :: [AlmostToken] -> (M.Map String Name, Name, [Token])
+makeTokens []         = (M.empty, Name 0, [])
+makeTokens (atk:atks) =
+    let (nameMap, nextName, atks') = makeTokens atks in case atk of
+        Right tk       -> (nameMap, nextName, (tk:atks'))
+        Left  (s, pos) -> case M.lookup s nameMap of
+            Just nm -> (nameMap, nextName, ((TK_Name nm, pos):atks'))
+            Nothing -> (M.insert s nextName nameMap,
+                next nextName, (TK_Name nextName, pos):atks')
+
+scan :: String -> NameEnv [Token]
+scan s = let (nameMap, nextName, tokens) = makeTokens (alexScanTokens s) in
+    NameEnv ((M.fromList . map (\(k,v) -> (v,k)) .  M.toList) nameMap)
+        nextName tokens
 }

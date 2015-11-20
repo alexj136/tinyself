@@ -3,6 +3,7 @@ module Interpreter where
 import qualified Data.Map as M
 import qualified Data.Set as S
 
+import Util
 import Syntax
 
 interpret :: Term -> Maybe (M.Map Name Function)

@@ -1,16 +1,10 @@
 module Syntax where
 
+import Util
 import qualified Data.List as L
 import qualified Data.Map  as M
 
 type Function = (Name, Term)
-
-newtype Name = Name Int deriving (Eq, Ord)
-instance Show Name where
-    show (Name n) = 'n' : show n
-
-next :: Name -> Name
-next (Name n) = Name (n + 1)
 
 data Term
     = Lit (M.Map Name Function)
